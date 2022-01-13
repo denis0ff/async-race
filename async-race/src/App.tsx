@@ -1,30 +1,32 @@
-import React from 'react';
-import logo from './logo.svg';
-import './App.css';
+import React, {
+  useState, useEffect, Dispatch, SetStateAction,
+} from 'react';
+import axios from 'axios';
+// import { Switch, Route } from 'react-router-dom';
 
-function App() {
+import Header from './components/Header/Header';
+import { Garage } from './components/Garage/Garage';
+import { GARAGE } from './config';
+import ICar from './types';
+import { Car } from './components/Garage/Car';
+
+const App = () => {
+  const [garage, setGarage]: [ICar[], Dispatch<SetStateAction<ICar[]>>] = useState([]);
+
+  useEffect(() => {
+    axios.get<ICar[]>(GARAGE).then(
+      ({ data }) => setGarage(data),
+    );
+  }, []);
+
   return (
-    <div className="App">
-      <header className="App-header">
-        <img src={logo} className="App-logo" alt="logo" />
-        <p>
-          Edit
-          {' '}
-          <code>src/App.tsx</code>
-          {' '}
-          and save to reload.
-        </p>
-        <a
-          className="App-link"
-          href="https://reactjs.org"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          Learn React
-        </a>
-      </header>
-    </div>
+    <>
+      <Header />
+      <Garage>
+        {garage.map((car) => <Car key={car.id} id={car.id} name={car.name} color={car.color} />)}
+      </Garage>
+    </>
   );
-}
+};
 
 export default App;
