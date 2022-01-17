@@ -1,14 +1,18 @@
 import axios from 'axios';
-import React from 'react';
-import styled from 'styled-components';
+import React, { Dispatch, SetStateAction, useState } from 'react';
+import styled, { css, keyframes } from 'styled-components';
 import { ReactComponent as IconCar } from '../../assets/car.svg';
 import { ReactComponent as IconFinish } from '../../assets/finish.svg';
-import { deleteCar } from '../../config';
-import ICar from '../../types';
+import { chooseCar, ENGINE } from '../../config';
+import { ICar, ReturnPromiseVoid } from '../../types';
 
-const ListItem = styled.li``;
+const ListItem = styled.li`
+  margin: 1rem 0;
+`;
 
-const Manager = styled.div``;
+const Manager = styled.div`
+  margin: .5rem 0;
+`;
 
 const Track = styled.div`
   position: relative;
@@ -20,16 +24,34 @@ const Track = styled.div`
 const ManagerButton = styled.button``;
 
 const CarTitle = styled.h4`
+  margin: 0 .5em;
   display: inline-block;
+  color: gold;
 `;
 
 const Controls = styled.div``;
 
 const ControlButton = styled.button``;
 
-const Model = styled.div`
+const CarTransition = keyframes`
+0% {
+  transform: translateX(0);
+}
+100% {
+  transform: translateX(600px);
+}
+`;
+
+const Model = styled.div <{ duration: number, isDrive: string }>`
+  margin-bottom: -5px;
   width: 64px;
   height: 32px;
+  ${(props) => ((props.duration)
+    ? css`animation: ${CarTransition} ${props.duration}ms linear forwards running;`
+    : '')
+}
+  animation-play-state: ${(props) => props.isDrive};
+  // animation: ${CarTransition} ${(props) => props.duration}ms linear forwards ${(props) => (props.duration ? 'running' : 'paused')};
 `;
 
 const StyledIconCar = styled(IconCar) <{ fill: string }>`
@@ -37,6 +59,8 @@ const StyledIconCar = styled(IconCar) <{ fill: string }>`
   height: 32px;
   g {
     fill: ${(props) => props.fill};
+    stroke-width: 100;
+    stroke: #fefefe;
   }
 `;
 
@@ -53,22 +77,69 @@ const StyledIconFinish = styled(IconFinish)`
   fill: #910303;
 `;
 
-export const Car = ({ id, name, color }: { id: ICar['id'], name: ICar['name'], color: ICar['color'] }) => {
-  console.log(color);
+export const Car = ({
+  changeGarage, id, name, color, updateCar,
+}: {
+  changeGarage: ReturnPromiseVoid,
+  id: ICar['id'], name: ICar['name'],
+  color: ICar['color'],
+  updateCar: Dispatch<SetStateAction<number | null>>
+}) => {
+  const [duration, setDuration] = useState(0);
+  const [isDrive, setIsDrive] = useState('running');
+
+  const [isDisablebRemove, setIsDisabledRemove] = useState(false);
+  const [isDisablebStart, setIsDisabledStart] = useState(false);
+  const [isDisablebReset, setIsDisabledReset] = useState(true);
 
   return (
     <ListItem>
       <Manager>
-        <ManagerButton>Select</ManagerButton>
-        <ManagerButton onClick={() => axios.delete(deleteCar(id))}>Remove</ManagerButton>
+        <ManagerButton onClick={() => updateCar(id)}>
+          Select
+        </ManagerButton>
+        <ManagerButton
+          disabled={isDisablebRemove}
+          onClick={async () => {
+            setIsDisabledRemove(true);
+            await axios.delete(chooseCar(id));
+            changeGarage();
+          }}
+        >
+          Remove
+        </ManagerButton>
         <CarTitle>{name}</CarTitle>
       </Manager>
       <Track>
         <Controls>
-          <ControlButton>A</ControlButton>
-          <ControlButton>B</ControlButton>
+          <ControlButton
+            disabled={isDisablebStart}
+            onClick={async () => {
+              setIsDisabledStart(true);
+              const startEngine = await axios.patch(ENGINE, null, { params: { id, status: 'started' } });
+              setDuration(startEngine.data.distance / startEngine.data.velocity);
+              setIsDisabledReset(false);
+              axios.patch(ENGINE, null, { params: { id, status: 'drive' } }).catch((error) => {
+                if (error.response) setIsDrive('paused');
+              });
+            }}
+          >
+            A
+          </ControlButton>
+          <ControlButton
+            disabled={isDisablebReset}
+            onClick={async () => {
+              setDuration(0);
+              setIsDrive('running');
+              setIsDisabledStart(false);
+              setIsDisabledReset(true);
+              await axios.patch(ENGINE, null, { params: { id, status: 'stopped' } });
+            }}
+          >
+            B
+          </ControlButton>
         </Controls>
-        <Model>
+        <Model duration={duration} isDrive={isDrive}>
           <StyledIconCar fill={color} />
         </Model>
         <Finish>

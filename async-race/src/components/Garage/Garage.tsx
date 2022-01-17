@@ -1,68 +1,80 @@
-/* eslint-disable react/prop-types */
 import styled from 'styled-components';
-import React, { useState } from 'react';
+import React, {
+  Dispatch, SetStateAction, useCallback, useEffect, useState,
+} from 'react';
 import axios from 'axios';
 import { GARAGE } from '../../config';
-import Models from '../../assets/models.json';
-// import ICar from '../../types';
+import { UpdateCar } from './UpdateCar';
+import { CreateCar } from './CreateCar';
+import { ICar } from '../../types';
+import { Car } from './Car';
+import { Pagination } from './Pagination';
+import { GenerateCars } from './GenerateCars';
 
 const Wrapper = styled.section``;
 
 const Container = styled.div``;
 
-const CarName = styled.input.attrs({ type: 'text' })``;
-
-const CarColor = styled.input.attrs({ type: 'color' })``;
-
 const Button = styled.button``;
 
 const List = styled.ul``;
 
-export const Garage = ({ children }) => {
-  const [newCarName, setNewCarName] = useState('');
-  const [newCarColor, setNewCarColor] = useState('');
+const getPageCars = (page: number, length: number) => {
+  const start = (page - 1) * 7;
+  const limit = page * 7;
+  const end = length - 1 > limit ? limit : length - 1;
+  return [start, end];
+};
+
+export const Garage = () => {
+  const [garage, setGarage]: [ICar[], Dispatch<SetStateAction<ICar[]>>] = useState([]);
+
+  const [page, setPage] = useState(1);
+
+  const changeGarage = useCallback(() => axios.get<ICar[]>(GARAGE)
+    .then(({ data }) => setGarage(data)), [garage]);
+
+  useEffect(() => {
+    changeGarage();
+  }, []);
+
+  const [updateCar, setUpdateCar]:
+  [number | null, Dispatch<SetStateAction<number | null>>] = useState(null);
 
   return (
     <>
       <Wrapper>
-        <Container>
-          <CarName onChange={(event) => setNewCarName(event.target.value)} />
-          <CarColor onChange={(event) => setNewCarColor(event.target.value)} />
-          <Button onClick={() => (axios.post(GARAGE, { name: newCarName, color: newCarColor }))}>
-            Create
-          </Button>
-        </Container>
-        <Container>
-          <CarName />
-          <CarColor />
-          <Button>Update</Button>
-        </Container>
+        <CreateCar changeGarage={changeGarage} />
+        <UpdateCar updateCar={updateCar} setUpdateCar={setUpdateCar} changeGarage={changeGarage} />
         <Container>
           <Button>Race</Button>
           <Button>Reset</Button>
-          <Button onClick={async () => {
-            const carNames = [...Object.values(JSON.parse(JSON.stringify(Models)))];
-            const arr = Array.from({ length: 100 }, () => (
-              {
-                name: carNames[Math.floor(Math.random() * carNames.length)],
-                color: `#${Math.floor(Math.random() * 16777215).toString(16)}`,
-              }));
-            arr.forEach((item) => axios.post(GARAGE, item));
-          }}
-          >
-            Generate Cars
-          </Button>
+          <GenerateCars changeGarage={changeGarage} />
         </Container>
       </Wrapper>
       <Wrapper>
         <List>
-          <h3>
+          <h2>
             Garage(
-            {children.length}
+            {garage.length - 1}
             )
+          </h2>
+          <h3>
+            Page #
+            {page}
           </h3>
-          {children}
+          {garage.slice(...getPageCars(page, garage.length)).map((car) => (
+            <Car
+              key={car.id}
+              changeGarage={changeGarage}
+              id={car.id}
+              name={car.name}
+              color={car.color}
+              updateCar={setUpdateCar}
+            />
+          ))}
         </List>
+        <Pagination length={garage.length} page={page} setPage={setPage} />
       </Wrapper>
     </>
   );
