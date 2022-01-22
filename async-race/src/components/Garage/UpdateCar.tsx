@@ -1,10 +1,8 @@
 import styled from 'styled-components';
-import React, {
-  Dispatch, SetStateAction, useState,
-} from 'react';
+import React from 'react';
 import axios from 'axios';
-import { GARAGE } from '../../config';
-import { ReturnPromiseVoid } from '../../types';
+import { getCar } from '../../config';
+import { IUpdateCarProps } from '../../types';
 
 const Container = styled.div``;
 
@@ -14,28 +12,41 @@ const CarColor = styled.input.attrs({ type: 'color' })``;
 
 const Button = styled.button``;
 
-export const UpdateCar = ({ updateCar, setUpdateCar, changeGarage }:
-{
-  updateCar: number | null,
-  setUpdateCar: Dispatch<SetStateAction<number | null>>,
-  changeGarage: ReturnPromiseVoid
-}) => {
-  const [newCarName, setNewCarName] = useState('');
-  const [newCarColor, setNewCarColor] = useState('#000000');
-
+export const UpdateCar = ({
+  updateCar, setUpdateCar, changeGarage,
+}: IUpdateCarProps) => {
+  const { id, name, color } = updateCar;
   return (
     <Container>
       <CarName
-        disabled={updateCar === null}
-        onChange={(event) => setNewCarName(event.target.value)}
+        disabled={id === -1}
+        value={name}
+        maxLength={44}
+        onChange={(event) => setUpdateCar((prevState) => ({
+          id: prevState.id,
+          color: prevState.color,
+          name: event.target.value,
+        }))}
       />
-      <CarColor onChange={(event) => setNewCarColor(event.target.value)} />
+      <CarColor
+        disabled={id === -1}
+        value={color}
+        onChange={(event) => setUpdateCar((prevState) => ({
+          id: prevState.id,
+          name: prevState.name,
+          color: event.target.value,
+        }))}
+      />
       <Button
-        disabled={updateCar === null}
-        onClick={() => {
-          axios.put(`${GARAGE}/${updateCar}`, { name: newCarName, color: newCarColor });
+        disabled={id === -1}
+        onClick={async () => {
+          await axios.put(getCar(id), { name, color });
           changeGarage();
-          setUpdateCar(null);
+          setUpdateCar((prevState) => ({
+            color: prevState.color,
+            name: prevState.name,
+            id: -1,
+          }));
         }}
       >
         Update

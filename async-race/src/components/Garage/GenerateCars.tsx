@@ -16,16 +16,19 @@ const randomCarName = () => {
 
 const randomCarColor = () => `#${Math.floor(Math.random() * 16777215).toString(16)}`;
 
-export const GenerateCars = ({ changeGarage }: { changeGarage: ReturnPromiseVoid }) => (
-  <Button onClick={async () => {
-    const randomCars = Array.from({ length: 100 }, () => (
-      {
-        name: randomCarName(),
-        color: randomCarColor(),
-      }));
-    randomCars.forEach((item) => axios.post(GARAGE, item));
-    changeGarage();
-  }}
+export const GenerateCars = ({ changeGarage, isDisabled }:
+{ changeGarage: ReturnPromiseVoid, isDisabled: boolean }) => (
+  <Button
+    disabled={isDisabled}
+    onClick={async () => {
+      const randomCars = Array.from({ length: 100 }, () => (
+        {
+          name: randomCarName(),
+          color: randomCarColor(),
+        }));
+      randomCars.forEach((item) => axios.post(GARAGE, item));
+      changeGarage();
+    }}
   >
     Generate Cars
   </Button>

@@ -1,10 +1,10 @@
 import axios from 'axios';
-import React, { Dispatch, SetStateAction, useState } from 'react';
+import React, { useEffect, useState } from 'react';
 import styled, { css, keyframes } from 'styled-components';
 import { ReactComponent as IconCar } from '../../assets/car.svg';
 import { ReactComponent as IconFinish } from '../../assets/finish.svg';
-import { chooseCar, ENGINE } from '../../config';
-import { ICar, ReturnPromiseVoid } from '../../types';
+import { getCar, getWinner, ENGINE } from '../../config';
+import { ICarProps } from '../../types';
 
 const ListItem = styled.li`
   margin: 1rem 0;
@@ -18,7 +18,7 @@ const Track = styled.div`
   position: relative;
   display: flex;
   align-items: flex-end;
-  border-bottom: 4px dashed #8f8f8f
+  border-bottom: 4px dashed #8f8f8f;
 `;
 
 const ManagerButton = styled.button``;
@@ -29,7 +29,10 @@ const CarTitle = styled.h4`
   color: gold;
 `;
 
-const Controls = styled.div``;
+const Controls = styled.div`
+  display: flex;
+  padding: 0.5rem;
+`;
 
 const ControlButton = styled.button``;
 
@@ -38,20 +41,19 @@ const CarTransition = keyframes`
   transform: translateX(0);
 }
 100% {
-  transform: translateX(600px);
+  transform: translateX(calc(99% - 64px));
 }
 `;
 
 const Model = styled.div <{ duration: number, isDrive: string }>`
   margin-bottom: -5px;
-  width: 64px;
+  width: 100%;
   height: 32px;
   ${(props) => ((props.duration)
     ? css`animation: ${CarTransition} ${props.duration}ms linear forwards running;`
     : '')
 }
   animation-play-state: ${(props) => props.isDrive};
-  // animation: ${CarTransition} ${(props) => props.duration}ms linear forwards ${(props) => (props.duration ? 'running' : 'paused')};
 `;
 
 const StyledIconCar = styled(IconCar) <{ fill: string }>`
@@ -78,13 +80,10 @@ const StyledIconFinish = styled(IconFinish)`
 `;
 
 export const Car = ({
-  changeGarage, id, name, color, updateCar,
-}: {
-  changeGarage: ReturnPromiseVoid,
-  id: ICar['id'], name: ICar['name'],
-  color: ICar['color'],
-  updateCar: Dispatch<SetStateAction<number | null>>
-}) => {
+  car, isRace, needReset, setNeedReset, increaseFinishedCars,
+  setWinner, updateCar, changeGarage,
+}: ICarProps) => {
+  const { id, name, color } = car;
   const [duration, setDuration] = useState(0);
   const [isDrive, setIsDrive] = useState('running');
 
@@ -92,17 +91,61 @@ export const Car = ({
   const [isDisablebStart, setIsDisabledStart] = useState(false);
   const [isDisablebReset, setIsDisabledReset] = useState(true);
 
+  const updateWinner = (time: number) => {
+    if (isRace) {
+      setWinner({ id, name, time: Math.floor(time / 10) / 100 });
+    }
+  };
+
+  const startTrack = async () => {
+    setIsDisabledStart(true);
+    const startEngine = await axios.patch(ENGINE, null, { params: { id, status: 'started' } });
+    const time = startEngine.data.distance / startEngine.data.velocity;
+    setDuration(time);
+    axios.patch(ENGINE, null, { params: { id, status: 'drive' } })
+      .then(() => {
+        updateWinner(time);
+      })
+      .catch(({ response }) => {
+        if (response) setIsDrive('paused');
+      })
+      .finally(() => {
+        setIsDisabledReset(false);
+        increaseFinishedCars(1);
+      });
+  };
+
+  useEffect(() => { if (isRace) startTrack(); }, [isRace]);
+
+  const resetTrack = async () => {
+    setDuration(0);
+    setIsDrive('running');
+    setIsDisabledStart(false);
+    setIsDisabledReset(true);
+  };
+
+  useEffect(() => {
+    if (needReset) {
+      resetTrack();
+      setNeedReset(false);
+    }
+  }, [needReset]);
+
   return (
     <ListItem>
       <Manager>
-        <ManagerButton onClick={() => updateCar(id)}>
+        <ManagerButton onClick={() => {
+          updateCar({ id, name, color });
+        }}
+        >
           Select
         </ManagerButton>
         <ManagerButton
-          disabled={isDisablebRemove}
+          disabled={isDisablebRemove || isRace}
           onClick={async () => {
             setIsDisabledRemove(true);
-            await axios.delete(chooseCar(id));
+            await axios.delete(getCar(id));
+            axios.delete(getWinner(id)).catch(() => 0);
             changeGarage();
           }}
         >
@@ -114,27 +157,13 @@ export const Car = ({
         <Controls>
           <ControlButton
             disabled={isDisablebStart}
-            onClick={async () => {
-              setIsDisabledStart(true);
-              const startEngine = await axios.patch(ENGINE, null, { params: { id, status: 'started' } });
-              setDuration(startEngine.data.distance / startEngine.data.velocity);
-              setIsDisabledReset(false);
-              axios.patch(ENGINE, null, { params: { id, status: 'drive' } }).catch((error) => {
-                if (error.response) setIsDrive('paused');
-              });
-            }}
+            onClick={async () => startTrack()}
           >
             A
           </ControlButton>
           <ControlButton
             disabled={isDisablebReset}
-            onClick={async () => {
-              setDuration(0);
-              setIsDrive('running');
-              setIsDisabledStart(false);
-              setIsDisabledReset(true);
-              await axios.patch(ENGINE, null, { params: { id, status: 'stopped' } });
-            }}
+            onClick={async () => resetTrack()}
           >
             B
           </ControlButton>

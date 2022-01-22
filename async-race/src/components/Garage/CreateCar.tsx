@@ -1,8 +1,8 @@
 import styled from 'styled-components';
-import React, { useState } from 'react';
+import React from 'react';
 import axios from 'axios';
 import { GARAGE } from '../../config';
-import { ReturnPromiseVoid } from '../../types';
+import { ICreateCarProps } from '../../types';
 
 const Container = styled.div``;
 
@@ -12,21 +12,33 @@ const CarColor = styled.input.attrs({ type: 'color' })``;
 
 const Button = styled.button``;
 
-export const CreateCar = ({ changeGarage }: { changeGarage: ReturnPromiseVoid }) => {
-  const [newCarName, setNewCarName] = useState('');
-  const [newCarColor, setNewCarColor] = useState('#000000');
-
-  return (
-    <Container>
-      <CarName onChange={(event) => setNewCarName(event.target.value)} />
-      <CarColor onChange={(event) => setNewCarColor(event.target.value)} />
-      <Button onClick={() => {
-        axios.post(GARAGE, { name: newCarName, color: newCarColor });
+export const CreateCar = ({
+  newCar, setNewCar, changeGarage, isRace,
+}: ICreateCarProps) => (
+  <Container>
+    <CarName
+      value={newCar.name}
+      maxLength={44}
+      onChange={(event) => setNewCar((prevState) => ({
+        color: prevState.color,
+        name: event.target.value,
+      }))}
+    />
+    <CarColor
+      value={newCar.color}
+      onChange={(event) => setNewCar((prevState) => ({
+        name: prevState.name,
+        color: event.target.value,
+      }))}
+    />
+    <Button
+      disabled={isRace}
+      onClick={async () => {
+        await axios.post(GARAGE, { name: newCar.name, color: newCar.color });
         changeGarage();
       }}
-      >
-        Create
-      </Button>
-    </Container>
-  );
-};
+    >
+      Create
+    </Button>
+  </Container>
+);
