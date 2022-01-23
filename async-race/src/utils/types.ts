@@ -80,6 +80,7 @@ export interface IWinnerCarProps {
   wins: number
   time: number
   number: number
+  sort: string
 }
 
 export interface IOrderPick {

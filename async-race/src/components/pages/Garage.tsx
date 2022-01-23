@@ -5,23 +5,16 @@ import React, {
 import axios from 'axios';
 import {
   GARAGE, getPageCars, getWinner, LIMIT_GARAGE, WINNERS,
-} from '../../config';
+} from '../../utils/config';
 import { UpdateCar } from '../Garage/UpdateCar';
-import { CreateCar } from '../Garage/CreateCar';
+import { Button, Container, CreateCar } from '../Garage/CreateCar';
 import {
   ICar, IGarageProps, INewWinner,
-} from '../../types';
+} from '../../utils/types';
 import { Car } from '../Garage/Car';
 import { Pagination } from '../global/Pagination';
 import { GenerateCars } from '../Garage/GenerateCars';
-
-const Wrapper = styled.section`
-  position: relative;
-`;
-
-const Container = styled.div``;
-
-const Button = styled.button``;
+import { Wrapper } from './Winners';
 
 const List = styled.ul`
   overflow-x: hidden;
@@ -49,6 +42,15 @@ const Winner = styled.h3 <{ newWinner: number }>`
   width: 50%;
   font-size: 2rem;
   text-align: center;
+  word-break: break-word;
+  color: #fff;
+  text-shadow:
+    0 0 2px #eee,
+    0 0 4px #fff,
+    0 -2px 4px #ff3,
+    2px -4px 6px #fd3,
+    -2px -6px 11px #f80,
+    2px -8px 18px #f20;
   z-index: 100;
   opacity: 0;
   ${(props) => ((props.newWinner)
@@ -132,7 +134,9 @@ export const Garage = (props: IGarageProps, { initialCount = 0, initialWinner = 
         />
         <Container>
           <Button
-            disabled={isRace}
+            disabled={
+              isRace || finishedCars === getPageCars(garageProps.page, LIMIT_GARAGE, garage).length
+            }
             onClick={() => setIsRace(true)}
           >
             Race
@@ -198,7 +202,7 @@ export const Garage = (props: IGarageProps, { initialCount = 0, initialWinner = 
           </>
         ) : (
           <h2>
-            Here are no cars now. Try to create new car.
+            There are no cars here right now. Try to create new car.
           </h2>
         )}
       </Wrapper>

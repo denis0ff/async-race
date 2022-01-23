@@ -3,19 +3,63 @@ import React, {
   useCallback, useEffect, useState,
 } from 'react';
 import axios from 'axios';
-import { Link } from 'react-router-dom';
-import { IWinner, IWinnersProps } from '../../types';
+import { IWinner, IWinnersConfig, IWinnersProps } from '../../utils/types';
 import { Pagination } from '../global/Pagination';
 import {
   getPageCars, getWinners, LIMIT_WINNERS, orderPick,
-} from '../../config';
+} from '../../utils/config';
 
 import { Car } from '../Winners/Car';
+import { TextLink } from './NotFound';
 
-const Wrapper = styled.section``;
+export const Wrapper = styled.section`
+  position: relative;
+  padding: .5rem 0;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: .5rem;
+`;
 
 const Table = styled.table`
+  position: relative;
+  margin: 1rem 0;
+  border-collapse: collapse;
+  cursor: default;
+`;
 
+const THead = styled.thead`
+  box-shadow: 0 0 2em 2em #380031 inset;
+  th {
+    padding: .5rem;
+  }
+`;
+
+const WinsCeil = styled.th <{ config: IWinnersConfig }>`
+  cursor: pointer;
+  box-shadow: ${({ config }) => (config.sort === 'wins' ? '0 0 2em 2em #b3065c inset' : 'inherit')};
+  &::before {
+    content: ${({ config }) => (config.order === 'ASC' ? '"Сортировка: по возврастанию"' : '"Сортировка: по убыванию"')};
+    position: absolute;
+    top: -1.5em;
+    left: 0;
+    width: 99%;
+    pointer-events: none;
+    text-align: right;
+  }
+`;
+
+const TimeCeil = styled.th <{ config: IWinnersConfig }>`
+  min-width: 5rem;
+  cursor: pointer;
+  box-shadow: ${({ config }) => (config.sort === 'time' ? '0 0 2em 2em #b3065c inset' : 'inherit')};
+`;
+
+const TBody = styled.tbody`
+  font-size: 0.9em;
+  th {
+    height: 3.5em;
+  }
 `;
 
 export const Winners = ({
@@ -48,26 +92,30 @@ export const Winners = ({
               {page}
             </h3>
             <Table>
-              <thead>
+              <THead>
                 <tr>
                   <th>#</th>
                   <th>Car</th>
                   <th>Name</th>
-                  <th onClick={() => (sort === 'wins'
-                    ? setConfig((prevState) => ({ ...prevState, order: orderPick[order] }))
-                    : setConfig((prevState) => ({ ...prevState, sort: 'wins' })))}
+                  <WinsCeil
+                    config={config}
+                    onClick={() => (sort === 'wins'
+                      ? setConfig((prevState) => ({ ...prevState, order: orderPick[order] }))
+                      : setConfig((prevState) => ({ ...prevState, sort: 'wins' })))}
                   >
-                    Wins
-                  </th>
-                  <th onClick={() => (sort === 'time'
-                    ? setConfig((prevState) => ({ ...prevState, order: orderPick[order] }))
-                    : setConfig((prevState) => ({ ...prevState, sort: 'time' })))}
+                    Wins (times)
+                  </WinsCeil>
+                  <TimeCeil
+                    config={config}
+                    onClick={() => (sort === 'time'
+                      ? setConfig((prevState) => ({ ...prevState, order: orderPick[order] }))
+                      : setConfig((prevState) => ({ ...prevState, sort: 'time' })))}
                   >
-                    Best time (sec)
-                  </th>
+                    Best time (seconds)
+                  </TimeCeil>
                 </tr>
-              </thead>
-              <tbody>
+              </THead>
+              <TBody>
                 {getPageCars(page, LIMIT_WINNERS, winners).map((winner, index) => (
                   <Car
                     key={winner.id}
@@ -75,9 +123,10 @@ export const Winners = ({
                     wins={winner.wins}
                     time={winner.time}
                     number={index + 1 + (page - 1) * LIMIT_WINNERS}
+                    sort={config.sort}
                   />
                 ))}
-              </tbody>
+              </TBody>
             </Table>
             <Pagination
               page={page}
@@ -89,9 +138,9 @@ export const Winners = ({
         )
         : (
           <h2>
-            Here are no winners now. Try to make a race in
+            There are no winners here right now. Try to complete the race in
             {' '}
-            <Link to="/">Garage</Link>
+            <TextLink to="/">Garage</TextLink>
           </h2>
         )}
     </Wrapper>

@@ -1,9 +1,24 @@
 import React, { useState } from 'react';
 import { Link, Route, Routes } from 'react-router-dom';
+import styled from 'styled-components';
 
-import { Garage } from './components/pages/Garage';
-import { NotFound } from './components/pages/NotFound';
-import { Winners } from './components/pages/Winners';
+import { Garage } from './pages/Garage';
+import { NotFound } from './pages/NotFound';
+import { Winners } from './pages/Winners';
+
+const NavLink = styled(Link)`
+  margin: 0 .5rem;
+  padding: .2rem 1rem;
+  font-size: 1.2rem;
+  border-radius: 0.5rem;
+  outline: 3px solid #b3065c;
+`;
+
+const Header = styled.header`
+  margin-bottom: .5rem;
+  display: flex;
+  height: 100%; 
+`;
 
 const App = () => {
   const [garagePageNumber, setGaragePageNumber] = useState(1);
@@ -11,14 +26,14 @@ const App = () => {
   const [updateCar, setUpdateCar] = useState({ name: '', color: '#000000', id: -1 });
 
   const [winnersPageNumber, setWinnersPageNumber] = useState(1);
-  const [winnersConfig, setWinnersConfig] = useState({ sort: 'id', order: 'ASC' });
+  const [winnersConfig, setWinnersConfig] = useState({ sort: 'wins', order: 'DESC' });
 
   return (
     <>
-      <header>
-        <Link to="/">Garage</Link>
-        <Link to="/winners">Winners</Link>
-      </header>
+      <Header>
+        <NavLink to="/">Garage</NavLink>
+        <NavLink to="/winners">Winners</NavLink>
+      </Header>
       <Routes>
         <Route
           path="/"

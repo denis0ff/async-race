@@ -1,10 +1,8 @@
-import styled from 'styled-components';
 import React from 'react';
 import axios from 'axios';
-import { GARAGE } from '../../config';
-import { ReturnPromiseVoid } from '../../types';
-
-const Button = styled.button``;
+import { GARAGE } from '../../utils/config';
+import { ReturnPromiseVoid } from '../../utils/types';
+import { Button } from './CreateCar';
 
 const randomCarName = () => {
   const manufactures = ['Volkswagen', 'Volvo', 'Tesla', 'BMW', 'Audi', 'Toyota', 'Skoda', 'Rolls-Royce', 'Renault', 'Pontiac'];

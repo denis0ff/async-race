@@ -1,16 +1,10 @@
-import styled from 'styled-components';
 import React from 'react';
 import axios from 'axios';
-import { getCar } from '../../config';
-import { IUpdateCarProps } from '../../types';
-
-const Container = styled.div``;
-
-const CarName = styled.input.attrs({ type: 'text' })``;
-
-const CarColor = styled.input.attrs({ type: 'color' })``;
-
-const Button = styled.button``;
+import { getCar } from '../../utils/config';
+import { IUpdateCarProps } from '../../utils/types';
+import {
+  Container, CarName, CarColor, Button,
+} from './CreateCar';
 
 export const UpdateCar = ({
   updateCar, setUpdateCar, changeGarage,
@@ -21,7 +15,7 @@ export const UpdateCar = ({
       <CarName
         disabled={id === -1}
         value={name}
-        maxLength={44}
+        maxLength={32}
         onChange={(event) => setUpdateCar((prevState) => ({
           id: prevState.id,
           color: prevState.color,

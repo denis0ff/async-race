@@ -3,25 +3,20 @@ import React, { useEffect, useState } from 'react';
 import styled, { css, keyframes } from 'styled-components';
 import { ReactComponent as IconCar } from '../../assets/car.svg';
 import { ReactComponent as IconFinish } from '../../assets/finish.svg';
-import { getCar, getWinner, ENGINE } from '../../config';
-import { ICarProps } from '../../types';
+import { getCar, getWinner, ENGINE } from '../../utils/config';
+import { ICarProps } from '../../utils/types';
+import { Button, Container } from './CreateCar';
 
 const ListItem = styled.li`
   margin: 1rem 0;
-`;
-
-const Manager = styled.div`
-  margin: .5rem 0;
 `;
 
 const Track = styled.div`
   position: relative;
   display: flex;
   align-items: flex-end;
-  border-bottom: 4px dashed #8f8f8f;
+  border-bottom: 4px dashed #cd853f;
 `;
-
-const ManagerButton = styled.button``;
 
 const CarTitle = styled.h4`
   margin: 0 .5em;
@@ -31,24 +26,23 @@ const CarTitle = styled.h4`
 
 const Controls = styled.div`
   display: flex;
+  gap: 0.5rem 0.1rem;
   padding: 0.5rem;
 `;
-
-const ControlButton = styled.button``;
 
 const CarTransition = keyframes`
 0% {
   transform: translateX(0);
 }
 100% {
-  transform: translateX(calc(99% - 64px));
+  transform: translateX(calc(99% - 6em));
 }
 `;
 
 const Model = styled.div <{ duration: number, isDrive: string }>`
   margin-bottom: -5px;
   width: 100%;
-  height: 32px;
+  height: 3em;
   ${(props) => ((props.duration)
     ? css`animation: ${CarTransition} ${props.duration}ms linear forwards running;`
     : '')
@@ -57,8 +51,8 @@ const Model = styled.div <{ duration: number, isDrive: string }>`
 `;
 
 const StyledIconCar = styled(IconCar) <{ fill: string }>`
-  width: 64px;
-  height: 32px;
+  width: 6em;
+  height: 3em;
   g {
     fill: ${(props) => props.fill};
     stroke-width: 100;
@@ -68,14 +62,14 @@ const StyledIconCar = styled(IconCar) <{ fill: string }>`
 
 const Finish = styled.div`
   position: absolute;
-  right: calc(64px + 1%);
-  width: 36px;
-  height: 36px;
+  right: calc(6em + 1%);
+  width: 3em;
+  height: 3em;
 `;
 
 const StyledIconFinish = styled(IconFinish)`
-  width: 36px;
-  height: 36px;
+  width: 3em;
+  height: 3em;
   fill: #910303;
 `;
 
@@ -97,7 +91,15 @@ export const Car = ({
     }
   };
 
+  const resetTrack = async () => {
+    setDuration(0);
+    setIsDrive('running');
+    setIsDisabledStart(false);
+    setIsDisabledReset(true);
+  };
+
   const startTrack = async () => {
+    await resetTrack();
     setIsDisabledStart(true);
     const startEngine = await axios.patch(ENGINE, null, { params: { id, status: 'started' } });
     const time = startEngine.data.distance / startEngine.data.velocity;
@@ -111,18 +113,11 @@ export const Car = ({
       })
       .finally(() => {
         setIsDisabledReset(false);
-        increaseFinishedCars(1);
+        if (isRace) increaseFinishedCars(1);
       });
   };
 
   useEffect(() => { if (isRace) startTrack(); }, [isRace]);
-
-  const resetTrack = async () => {
-    setDuration(0);
-    setIsDrive('running');
-    setIsDisabledStart(false);
-    setIsDisabledReset(true);
-  };
 
   useEffect(() => {
     if (needReset) {
@@ -133,14 +128,14 @@ export const Car = ({
 
   return (
     <ListItem>
-      <Manager>
-        <ManagerButton onClick={() => {
+      <Container>
+        <Button onClick={() => {
           updateCar({ id, name, color });
         }}
         >
           Select
-        </ManagerButton>
-        <ManagerButton
+        </Button>
+        <Button
           disabled={isDisablebRemove || isRace}
           onClick={async () => {
             setIsDisabledRemove(true);
@@ -150,23 +145,23 @@ export const Car = ({
           }}
         >
           Remove
-        </ManagerButton>
+        </Button>
         <CarTitle>{name}</CarTitle>
-      </Manager>
+      </Container>
       <Track>
         <Controls>
-          <ControlButton
+          <Button
             disabled={isDisablebStart}
             onClick={async () => startTrack()}
           >
             A
-          </ControlButton>
-          <ControlButton
+          </Button>
+          <Button
             disabled={isDisablebReset}
             onClick={async () => resetTrack()}
           >
             B
-          </ControlButton>
+          </Button>
         </Controls>
         <Model duration={duration} isDrive={isDrive}>
           <StyledIconCar fill={color} />

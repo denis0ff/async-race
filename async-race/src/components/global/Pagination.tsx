@@ -1,10 +1,6 @@
-import styled from 'styled-components';
 import React, { useEffect, useState } from 'react';
-import { IPaginationProps } from '../../types';
-
-const Container = styled.div``;
-
-const Button = styled.button``;
+import { IPaginationProps } from '../../utils/types';
+import { Container, Button } from '../Garage/CreateCar';
 
 export const Pagination = (
   {

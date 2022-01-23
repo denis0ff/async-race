@@ -1,16 +1,26 @@
 import styled from 'styled-components';
 import React from 'react';
 import axios from 'axios';
-import { GARAGE } from '../../config';
-import { ICreateCarProps } from '../../types';
+import { GARAGE } from '../../utils/config';
+import { ICreateCarProps } from '../../utils/types';
 
-const Container = styled.div``;
+export const Container = styled.div`
+  display: flex;
+  gap: .1rem;
+`;
 
-const CarName = styled.input.attrs({ type: 'text' })``;
+export const CarName = styled.input.attrs({ type: 'text' })`
+  padding: .1rem .5rem;
+`;
 
-const CarColor = styled.input.attrs({ type: 'color' })``;
+export const CarColor = styled.input.attrs({ type: 'color' })`
+  cursor: pointer;
+`;
 
-const Button = styled.button``;
+export const Button = styled.button`
+  padding: .1rem .5rem;
+  cursor: pointer;
+`;
 
 export const CreateCar = ({
   newCar, setNewCar, changeGarage, isRace,
@@ -18,7 +28,7 @@ export const CreateCar = ({
   <Container>
     <CarName
       value={newCar.name}
-      maxLength={44}
+      maxLength={32}
       onChange={(event) => setNewCar((prevState) => ({
         color: prevState.color,
         name: event.target.value,
