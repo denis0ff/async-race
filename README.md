@@ -1,2 +1,3 @@
-# denis0ff-JSFE2021Q3
-Private repository for @denis0ff
+# Async race
+
+Deploy: https://denis0ff-async-race.netlify.app/

@@ -3,7 +3,6 @@ import ReactDOM from 'react-dom';
 import { BrowserRouter } from 'react-router-dom';
 import { createGlobalStyle } from 'styled-components';
 import App from './components/App';
-import { selfCheck } from './utils/self-check';
 
 const GlobalStyle = createGlobalStyle`
 
@@ -60,7 +59,7 @@ const GlobalStyle = createGlobalStyle`
     color: #fff;
     box-shadow: 0 0 2em 2em #380031 inset;
     transition: all 150ms ease-in-out;
-    
+
     &:hover {
       box-shadow: 0 0 1.7em 0 #bd00a4 inset;
     }
@@ -71,7 +70,6 @@ const GlobalStyle = createGlobalStyle`
     }
   }
 `;
-selfCheck();
 const app = (
   <BrowserRouter>
     <GlobalStyle />

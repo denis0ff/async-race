@@ -1,6 +1,6 @@
 import { IOrderPick } from './types';
 
-const BASE = 'http://127.0.0.1:3000/';
+const BASE = 'https://denis0ff-async-race.herokuapp.com/';
 
 export const GARAGE = `${BASE}garage`;
 
